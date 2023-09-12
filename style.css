@@ -1,0 +1,118 @@
+:root {
+  --body-font: "Verdana", "Helvetica", sans-serif;
+}
+
+html,
+body {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+body {
+  font-size: 87.5%;
+  font-family: var(--body-font);
+}
+
+h1 {
+  font-weight: bold;
+  line-height: 1.5em;
+}
+
+a {
+  color: #0075f8;
+  text-decoration: none;
+}
+
+a:hover {
+  color: #8caaff;
+}
+
+a:focus {
+  outline: thin dotted;
+}
+
+p,
+a {
+  line-height: 1.25em;
+}
+
+body,
+h1,
+h2,
+h3,
+p,
+ul,
+ol,
+li,
+blockquote {
+  margin: 0;
+}
+
+table {
+  display: block;
+  overflow-x: auto;
+  border-collapse: collapse;
+}
+
+thead,
+tbody {
+  vertical-align: middle;
+}
+
+thead th {
+  font-weight: bold;
+  text-align: left;
+}
+
+thead tr {
+  border-bottom: 2px solid #5b5c79;
+}
+
+tbody tr {
+  border-bottom: 1px solid #d1d1da;
+}
+
+tbody tr:hover {
+  background: #e1e8ff;
+}
+
+tr:nth-child(even) {
+  background: #e8e8ec;
+}
+
+td,
+th {
+  white-space: nowrap;
+  padding: 4px 6px;
+  padding-right: 2em;
+}
+
+td:nth-child(2) {
+  white-space: normal;
+  min-width: 200px;
+  max-width: 600px;
+}
+
+.mt-4 {
+  margin-top: 1rem;
+}
+
+div#page {
+  overflow: visible;
+  margin-left: 20px;
+  margin-right: 20px;
+  flex: 1 1 0%;
+}
+
+#page>p {
+  margin-bottom: 0.5rem;
+}
+
+footer {
+  width: 100%;
+  text-align: center;
+  padding: 1em 0 1em;
+  border-top: 1px solid #e8e8ec;
+  flex: 0 1 auto;
+}
