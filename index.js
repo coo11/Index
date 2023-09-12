@@ -15,7 +15,6 @@ function prefix(css) {
       <style>
 ${css}
       </style>
-      <link type="text/css" rel="stylesheet" href="style.css" />
     </head>
     <body>
       <div id="page" class="mt-4">
