@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>SVG to Image</title>
+    <link rel="icon" href="data:," />
+  </head>
+
+  <body>
+    <!--
+  https://jsfiddle.net/remarkablemark/fxg4Lvdt/
+-->
+
+    <h1>SVG to Image</h1>
+
+    <!--
+  Load SVG.
+-->
+    <form id="load-svg">
+      <p>
+        <textarea
+          placeholder="SVG markup..."
+          rows="5"
+          cols="50"
+          autofocus
+          required
+        ></textarea>
+      </p>
+
+      <button type="submit">Load SVG</button>
+    </form>
+
+    <!--
+  SVG container.
+-->
+    <div id="svg-container"></div>
+
+    <hr />
+
+    <!--
+  Save image.
+-->
+    <form id="save-image">
+      <p>
+        <label>
+          Width:
+          <input
+            placeholder="Pixels..."
+            name="width"
+            type="number"
+            min="1"
+            max="999999"
+            required
+          />
+        </label>
+        &nbsp;
+        <label>
+          Height:
+          <input
+            placeholder="Pixels..."
+            name="height"
+            type="number"
+            min="1"
+            max="999999"
+            required
+          />
+        </label>
+      </p>
+
+      <p>
+        <label>
+          <input type="checkbox" name="keep" checked />
+          Keep aspect ratio
+        </label>
+      </p>
+
+      <p>
+        <label>
+          Filename:
+          <input
+            placeholder="Name without extension..."
+            name="filename"
+            size="25"
+            required
+          />
+        </label>
+      </p>
+
+      <p>
+        Extension:
+        <label>
+          <input type="radio" name="extension" value="png" checked />
+          PNG
+        </label>
+        &nbsp;
+        <label>
+          <input type="radio" name="extension" value="jpeg" />
+          JPEG
+        </label>
+        <label>
+          <input type="radio" name="extension" value="webp" />
+          WEBP
+        </label>
+      </p>
+
+      <p>
+        <button type="submit">Save Image</button>
+      </p>
+    </form>
+
+    <canvas></canvas>
+    <a id="download-link" style="display: none"></a>
+    <script>
+      const textarea = document.querySelector("textarea");
+      const svgContainer = document.querySelector("#svg-container");
+
+      const loadSVGForm = document.querySelector("#load-svg");
+      const saveImageForm = document.querySelector("#save-image");
+
+      (() => {
+        let elem = document.createElement("canvas");
+        let isSupport = false;
+        if (!!(elem.getContext && elem.getContext("2d"))) {
+          isSupport =
+            elem.toDataURL("image/webp").indexOf("data:image/webp") == 0;
+        }
+        !isSupport &&
+          saveImageForm.querySelector("input[value=jpeg]").parentNode.remove();
+      })();
+
+      const loadButton = loadSVGForm.querySelector("button");
+      const saveButton = saveImageForm.querySelector("button");
+
+      const widthInput = saveImageForm.elements.width;
+      const heightInput = saveImageForm.elements.height;
+      const keepRatioCheck = saveImageForm.elements.keep;
+      const filenameInput = saveImageForm.elements.filename;
+
+      const canvas = document.querySelector("canvas");
+      const downloadLink = document.querySelector("#download-link");
+
+      let svg;
+
+      const svgToImage = {
+        get svgOriginalWidth() {
+          return svg.viewBox.baseVal.width;
+        },
+        get svgOriginalHeight() {
+          return svg.viewBox.baseVal.height;
+        },
+        get svgWidth() {
+          return svg.clientWidth || svg.getBoundingClientRect().width;
+        },
+        get svgHeight() {
+          return svg.clientHeight || svg.getBoundingClientRect().height;
+        },
+        resizeSVG({ width, height }) {
+          if (!svg) return;
+          if (width) {
+            svg.setAttribute("width", width);
+            if (keepRatioCheck.checked) {
+              height = Math.round(
+                (width * this.svgOriginalHeight) / this.svgOriginalWidth
+              );
+              svg.setAttribute("height", height);
+              heightInput.value = height;
+              return;
+            }
+          }
+          if (height) {
+            svg.setAttribute("height", height);
+            if (keepRatioCheck.checked) {
+              width = Math.round(
+                (height * this.svgOriginalWidth) / this.svgOriginalHeight
+              );
+              svg.setAttribute("width", width);
+              widthInput.value = width;
+            }
+          }
+        },
+        resetCanvas() {
+          const ctx = canvas.getContext("2d");
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          ctx.beginPath();
+          canvas.width = canvas.height = 1;
+        },
+        init() {
+          this.resetCanvas();
+
+          loadSVGForm.addEventListener("submit", event => {
+            event.preventDefault();
+
+            this.resetCanvas();
+
+            svgContainer.innerHTML = textarea.value;
+            svg = svgContainer.querySelector("svg");
+
+            /* Add viewBox & remove width & height
+                 Prevent image from being cropped */
+            if (!svg.hasAttribute("viewBox")) {
+              svg.setAttribute(
+                "viewBox",
+                `0 0 ${this.svgWidth} ${this.svgHeight}`
+              );
+            }
+            svg.removeAttribute("width");
+            svg.removeAttribute("height");
+            svg.removeAttribute("x");
+            svg.removeAttribute("y");
+
+            widthInput.value = this.svgWidth;
+            heightInput.value = this.svgHeight;
+            filenameInput.value =
+              svg.getAttribute("aria-label") || svg.id || "untitled";
+          });
+
+          widthInput.addEventListener("input", event => {
+            this.resizeSVG({ width: event.target.value });
+          });
+
+          heightInput.addEventListener("input", event => {
+            this.resizeSVG({ height: event.target.value });
+          });
+
+          keepRatioCheck.addEventListener("change", event => {
+            if (event.target.checked) {
+              this.resizeSVG({
+                width: widthInput.value,
+                height: heightInput.value
+              });
+            }
+          });
+
+          saveImageForm.addEventListener("submit", event => {
+            event.preventDefault();
+
+            let width = widthInput.value;
+            this.resizeSVG({
+              width: width,
+              height: heightInput.value
+            });
+            canvas.width = width;
+            canvas.height = heightInput.value;
+
+            let xml = new XMLSerializer().serializeToString(svg);
+            let img = new Image();
+            let blob = new Blob([xml], { type: "image/svg+xml" });
+            let url = URL.createObjectURL(blob);
+            window.form = event.target;
+
+            img.addEventListener("load", function drawImageAndDownload() {
+              URL.revokeObjectURL(url);
+              canvas.getContext("2d").drawImage(img, 0, 0);
+              let extension = saveImageForm.elements.extension.value;
+              let mimeType = "image/" + extension;
+              let uri = canvas
+                .toDataURL(mimeType)
+                .replace(mimeType, "octet/stream");
+              downloadLink.href = uri;
+              downloadLink.download = filenameInput.value + "." + extension;
+              downloadLink.click();
+              // cleanup
+              URL.revokeObjectURL(uri);
+              img.removeEventListener("load", drawImageAndDownload);
+            });
+
+            img.src = url;
+          });
+        }
+      };
+
+      svgToImage.init();
+    </script>
+  </body>
+</html>

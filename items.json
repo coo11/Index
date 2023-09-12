@@ -1,0 +1,20 @@
+[
+  {
+    "name": "SVG to Image",
+    "path": "svg2img",
+    "view": "",
+    "desc": "Convert SVG to image."
+  },
+  {
+    "name": "Image Comparison Tool",
+    "path": "",
+    "view": "https://ict.ehhh.eu.org/",
+    "desc": "Compare two images or videos in your browser side by side."
+  },
+  {
+    "name": "pangu.js Demo",
+    "path": "pangu",
+    "view": "",
+    "desc": "Insert whitespace between CJK and half-width characters."
+  }
+]
