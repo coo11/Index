@@ -99,6 +99,10 @@
           <input type="radio" name="extension" value="jpeg" />
           JPEG
         </label>
+        <label>
+          <input type="radio" name="extension" value="webp" />
+          WEBP
+        </label>
       </p>
 
       <p>
@@ -114,6 +118,17 @@
 
       const loadSVGForm = document.querySelector("#load-svg");
       const saveImageForm = document.querySelector("#save-image");
+
+      (() => {
+        let elem = document.createElement("canvas");
+        let isSupport = false;
+        if (!!(elem.getContext && elem.getContext("2d"))) {
+          isSupport =
+            elem.toDataURL("image/webp").indexOf("data:image/webp") == 0;
+        }
+        !isSupport &&
+          saveImageForm.querySelector("input[value=jpeg]").parentNode.remove();
+      })();
 
       const loadButton = loadSVGForm.querySelector("button");
       const saveButton = saveImageForm.querySelector("button");
@@ -183,7 +198,7 @@
             svg = svgContainer.querySelector("svg");
 
             /* Add viewBox & remove width & height
-           Prevent image from being cropped */
+                 Prevent image from being cropped */
             if (!svg.hasAttribute("viewBox")) {
               svg.setAttribute(
                 "viewBox",
@@ -213,7 +228,7 @@
             if (event.target.checked) {
               this.resizeSVG({
                 width: widthInput.value,
-                height: heightInput.value,
+                height: heightInput.value
               });
             }
           });
@@ -224,7 +239,7 @@
             let width = widthInput.value;
             this.resizeSVG({
               width: width,
-              height: heightInput.value,
+              height: heightInput.value
             });
             canvas.width = width;
             canvas.height = heightInput.value;
@@ -253,7 +268,7 @@
 
             img.src = url;
           });
-        },
+        }
       };
 
       svgToImage.init();
