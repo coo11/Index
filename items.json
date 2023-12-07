@@ -16,5 +16,17 @@
     "path": "pangu",
     "view": "",
     "desc": "Insert whitespace between CJK and half-width characters."
+  },
+  {
+    "name": "MS Pinyin UDP Manager",
+    "path": "mspyudpmgr",
+    "view": "",
+    "desc": "Parse and dump MS Pinyin IME user defined phrases."
+  },
+  {
+    "name": "Minifier",
+    "path": "",
+    "view": "https://hm.ehhh.eu.org/",
+    "desc": "Online HTML/JS/CSS Minifier"
   }
 ]

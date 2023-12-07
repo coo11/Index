@@ -6,6 +6,7 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
     <title>SVG to Image</title>
     <link rel="icon" href="data:," />
+    <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
   </head>
 
   <body>
@@ -27,18 +28,28 @@
           autofocus
           required
         ></textarea>
+        <br />
+        <button type="submit">Load SVG</button>
       </p>
-
-      <button type="submit">Load SVG</button>
     </form>
-
+    <hr />
+    <label for="file-input"
+      >Or select file(s) from local to do a mass convert for square
+      image(s):</label
+    >
+    <br />
+    <input
+      id="file-input"
+      name="filefield"
+      multiple="multiple"
+      type="file"
+      accept=".svg"
+    />
     <!--
   SVG container.
 -->
-    <div id="svg-container"></div>
-
     <hr />
-
+    <div id="svg-container"></div>
     <!--
   Save image.
 -->
@@ -127,11 +138,13 @@
             elem.toDataURL("image/webp").indexOf("data:image/webp") == 0;
         }
         !isSupport &&
-          saveImageForm.querySelector("input[value=jpeg]").parentNode.remove();
+          saveImageForm.querySelector("input[value=webp]").parentNode.remove();
       })();
 
       const loadButton = loadSVGForm.querySelector("button");
       const saveButton = saveImageForm.querySelector("button");
+
+      const selectFileInput = document.querySelector("#file-input");
 
       const widthInput = saveImageForm.elements.width;
       const heightInput = saveImageForm.elements.height;
@@ -155,6 +168,9 @@
         },
         get svgHeight() {
           return svg.clientHeight || svg.getBoundingClientRect().height;
+        },
+        get saveExtension() {
+          return saveImageForm.elements.extension.value;
         },
         resizeSVG({ width, height }) {
           if (!svg) return;
@@ -186,29 +202,60 @@
           ctx.beginPath();
           canvas.width = canvas.height = 1;
         },
+        svgInit() {
+          this.resetCanvas();
+          svg = svgContainer.querySelector("svg");
+          /* Add viewBox & remove width & height
+                 Prevent image from being cropped */
+          if (!svg.hasAttribute("viewBox")) {
+            svg.setAttribute(
+              "viewBox",
+              `0 0 ${this.svgWidth} ${this.svgHeight}`
+            );
+          }
+          svg.removeAttribute("width");
+          svg.removeAttribute("height");
+          svg.removeAttribute("x");
+          svg.removeAttribute("y");
+        },
+        svgSave(singleFile = true) {
+          return new Promise(resolve => {
+            let xml = new XMLSerializer().serializeToString(svg);
+            let img = new Image();
+            let blob = new Blob([xml], { type: "image/svg+xml" });
+            let url = URL.createObjectURL(blob);
+            let that = this;
+            /* window.form = event.target; */
+
+            img.addEventListener("load", function drawImageAndDownload() {
+              URL.revokeObjectURL(url);
+              canvas.getContext("2d").drawImage(img, 0, 0);
+              let ext = that.saveExtension;
+              let mimeType = "image/" + ext;
+              let uri = canvas
+                .toDataURL(mimeType)
+                .replace(mimeType, "octet/stream");
+              // cleanup
+              URL.revokeObjectURL(uri);
+              img.removeEventListener("load", drawImageAndDownload);
+
+              if (singleFile)
+                that.download(uri, filenameInput.value + "." + ext);
+              resolve(uri);
+            });
+
+            img.src = url;
+          });
+        },
         init() {
           this.resetCanvas();
 
           loadSVGForm.addEventListener("submit", event => {
             event.preventDefault();
 
-            this.resetCanvas();
-
             svgContainer.innerHTML = textarea.value;
-            svg = svgContainer.querySelector("svg");
 
-            /* Add viewBox & remove width & height
-                 Prevent image from being cropped */
-            if (!svg.hasAttribute("viewBox")) {
-              svg.setAttribute(
-                "viewBox",
-                `0 0 ${this.svgWidth} ${this.svgHeight}`
-              );
-            }
-            svg.removeAttribute("width");
-            svg.removeAttribute("height");
-            svg.removeAttribute("x");
-            svg.removeAttribute("y");
+            this.svgInit();
 
             widthInput.value = this.svgWidth;
             heightInput.value = this.svgHeight;
@@ -244,34 +291,62 @@
             canvas.width = width;
             canvas.height = heightInput.value;
 
-            let xml = new XMLSerializer().serializeToString(svg);
-            let img = new Image();
-            let blob = new Blob([xml], { type: "image/svg+xml" });
-            let url = URL.createObjectURL(blob);
-            window.form = event.target;
-
-            img.addEventListener("load", function drawImageAndDownload() {
-              URL.revokeObjectURL(url);
-              canvas.getContext("2d").drawImage(img, 0, 0);
-              let extension = saveImageForm.elements.extension.value;
-              let mimeType = "image/" + extension;
-              let uri = canvas
-                .toDataURL(mimeType)
-                .replace(mimeType, "octet/stream");
-              downloadLink.href = uri;
-              downloadLink.download = filenameInput.value + "." + extension;
-              downloadLink.click();
-              // cleanup
-              URL.revokeObjectURL(uri);
-              img.removeEventListener("load", drawImageAndDownload);
-            });
-
-            img.src = url;
+            this.svgSave();
           });
+
+          selectFileInput.onclick = ({ target: e }) => {
+            e.value = "";
+          };
+          selectFileInput.onchange = async ({ target: e }) => {
+            let sideLength = prompt("Input side length:", "64");
+            if (!sideLength || !/^\d+$/.test(sideLength)) return;
+            sideLength = Number(sideLength);
+            let zip = new JSZip();
+            for (const file of e.files) {
+              svgContainer.innerHTML = await readFileContent(file);
+              this.svgInit();
+              this.resizeSVG({
+                width: sideLength,
+                height: sideLength
+              });
+              canvas.width = sideLength;
+              canvas.height = sideLength;
+              let uri = await this.svgSave(false);
+              zip.file(
+                file.name.slice(0, -4) + "." + this.saveExtension,
+                uri.split("base64,")[1],
+                { base64: true }
+              );
+            }
+            zip
+              .generateAsync({ type: "blob" })
+              .then(data =>
+                this.download(
+                  URL.createObjectURL(data),
+                  `BatchSVG2Image_${Date.now()}.zip`
+                )
+              );
+          };
+        },
+        download(dataUri, filename) {
+          downloadLink.href = dataUri;
+          downloadLink.download = filename;
+          downloadLink.click();
+          downloadLink.href = "";
         }
       };
 
       svgToImage.init();
+
+      async function readFileContent(file) {
+        return new Promise((resolve, reject) => {
+          let fileReaderInstance = new FileReader();
+          fileReaderInstance.onload = ({ target: { result: e } }) => resolve(e);
+          fileReaderInstance.onerror = ({ target: { error: e } }) =>
+            reject(new BusinessError(e.message || "读取文件失败。", e));
+          fileReaderInstance.readAsText(file);
+        });
+      }
     </script>
   </body>
 </html>
