@@ -127,7 +127,7 @@
             elem.toDataURL("image/webp").indexOf("data:image/webp") == 0;
         }
         !isSupport &&
-          saveImageForm.querySelector("input[value=jpeg]").parentNode.remove();
+          saveImageForm.querySelector("input[value=webp]").parentNode.remove();
       })();
 
       const loadButton = loadSVGForm.querySelector("button");
