@@ -224,11 +224,19 @@ btn.onclick = () => {
   let errMsg = "";
   try {
     data = data.map((i, idx) => {
-      let [key, order, ...word] = i.split(/=|,/);
-      word = word.join("");
-      if (!key || !order || !word) errMsg += `Line ${idx} error: ${i}\n`;
+      let [, key, order, word] =
+        i.match(/([^=]+?)\s*=\s*(\d+)\s*,\s*(.*)/) || [];
+      if (!key || !order || !word) {
+        errMsg += `Line ${idx} error: ${i}\n`;
+        return null;
+      }
+      if (key.startsWith("u") || key.startsWith("v")) {
+        errMsg += `Line ${idx} error: ${i} - Phrase starts with "u/v" is invalid\n`;
+        return null;
+      }
       return { key, order, word };
     });
+    data = data.filter(i => Boolean(i));
     if (!data.length) return;
     dump(data, "UserDefinedPhrase_" + Date.now());
   } catch (e) {
