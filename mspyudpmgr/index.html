@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>MSPinyinIMEUDPMgr</title>
+    <link rel="stylesheet" href="./style.css" />
+    <link rel="icon" href="data:," />
+  </head>
+
+  <body>
+    <main>
+      <h1>MS Pinyin IME User Defined Phrase Manager</h1>
+      <hr />
+      <h2>Select .dat file to parse</h2>
+      <input id="file-input" type="file" accept=".dat,.txt" />
+      <p>
+        <textarea
+          id="show-area"
+          placeholder="Parsing result, or edit here. Default display format is Baidu Pinyin IME"
+          rows="10"
+          style="width: 100%; max-width: 600px"
+          autofocus=""
+          required=""
+        ></textarea>
+      </p>
+      <button id="dump-btn">Dump to .dat file</button>
+      <div id="err-tip" style="color: red"></div>
+    </main>
+    <script src="index.js"></script>
+  </body>
+</html>
