@@ -57,28 +57,8 @@ function template(uri, name, desc) {
 `;
 }
 
-function copyFolderRecursiveSync(sourceFolder, targetFolder) {
-  const files = fs.readdirSync(sourceFolder);
-
-  if (!fs.existsSync(targetFolder)) {
-    fs.mkdirSync(targetFolder);
-  }
-
-  files.forEach(file => {
-    const sourceFilePath = path.join(sourceFolder, file);
-    const targetFilePath = path.join(targetFolder, file);
-
-    if (fs.lstatSync(sourceFilePath).isDirectory()) {
-      copyFolderRecursiveSync(sourceFilePath, targetFilePath);
-    } else {
-      fs.copyFileSync(sourceFilePath, targetFilePath);
-    }
-  });
-}
-
 (async () => {
-  if (fs.existsSync("./dist"))
-    fs.rmSync("./dist", { recursive: true, force: true });
+  if (fs.existsSync("./dist")) fs.rmSync("./dist", { recursive: true, force: true });
   fs.mkdirSync("dist/");
 
   let css = fs.readFileSync("style.css", "utf-8");
@@ -88,7 +68,7 @@ function copyFolderRecursiveSync(sourceFolder, targetFolder) {
   for (let item of data) {
     let url = item.view;
     if (!url) {
-      copyFolderRecursiveSync("./src/" + item.path, "./dist/" + item.path);
+      fs.cpSync("./src/" + item.path, "./dist/" + item.path, { recursive: true });
       url = `https://${CNAME}/${item.path}`;
     }
     content += template(url, item.name, item.desc);

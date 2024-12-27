@@ -28,5 +28,11 @@
     "path": "",
     "view": "https://hm.ehhh.eu.org/",
     "desc": "Online HTML/JS/CSS Minifier"
+  },
+  {
+    "name": "Hashtag Parser",
+    "path": "danbooru/hashtagparser",
+    "view": "",
+    "desc": "Convert plain text hashtag to Danbooru DText."
   }
 ]
