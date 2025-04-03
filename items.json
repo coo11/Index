@@ -33,6 +33,6 @@
     "name": "Hashtag Parser",
     "path": "danbooru/hashtagparser",
     "view": "",
-    "desc": "Convert plain text hashtag to DText."
+    "desc": "Convert plain text hashtag to Danbooru DText."
   }
 ]
