@@ -34,5 +34,11 @@
     "path": "danbooru/hashtagparser",
     "view": "",
     "desc": "Convert plain text hashtag to Danbooru DText."
+  },
+  {
+    "name": "JSON Editor",
+    "path": "jsoneditor",
+    "view": "https://json.ehhh.eu.org/",
+    "desc": "JSON Editor"
   }
 ]

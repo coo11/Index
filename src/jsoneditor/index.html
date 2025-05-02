@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="en-US">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+    <title>JSONEditor</title>
+    <link rel="icon" href="data:,">
+    <style>
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #toolbar {
+            padding: 4px;
+            background: #FFF;
+            display: flex;
+            gap: 4px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        #toolbar>button {
+            height: 24px;
+            border: 1px solid #3883FA;
+            background-color: #FFF;
+            color: #3883FA;
+        }
+
+        #toolbar>button:hover {
+            color: #5F9DFF;
+            border: 1px solid #5F9DFF;
+        }
+
+        #toolbar>span {
+            margin-left: auto;
+            font-size: 0.9rem;
+            line-height: 1rem;
+        }
+
+        #toolbar a {
+            text-decoration: none;
+            color: #3883FA;
+        }
+
+        #toolbar a:hover {
+            color: #5F9DFF;
+        }
+
+        #jsoneditor-container {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+        }
+
+        .editor-panel {
+            width: 100%;
+            display: block;
+        }
+
+        #dragbar {
+            width: 4px;
+            background-color: #FFF;
+            cursor: col-resize;
+            height: 100%;
+            z-index: 10;
+        }
+
+        @media (max-width: 768px) {
+            #jsoneditor-container {
+                flex-direction: column;
+                position: relative;
+            }
+
+            .editor-panel {
+                position: absolute;
+                width: 100% !important;
+                height: 100%;
+                border: none !important;
+                transition: transform 0.5s ease-in-out;
+            }
+
+            #dragbar {
+                display: none;
+            }
+        }
+
+        #activePaneLabel {
+            margin-left: auto;
+            font-size: 14px;
+            color: #666;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="toolbar">
+        <button id="swapContent">⇆</button>
+        <button id="toggleEditor" style="display: none;">&nbsp;↓&nbsp;</button>
+        <button id="hideRight" style="display: none;">✔ Right</button>
+        <span>
+            <a href="https://jsondiffpatch.com/" target="_blank">DiffPatch</a>&nbsp;|&nbsp;
+            <a href="https://jsoneditoronline.org/" target="_blank">Original</a>&nbsp;|&nbsp;
+            <a href="https://github.com/josdejong/svelte-jsoneditor" target="_blank">Github</a>
+        </span>
+    </div>
+
+    <div id="jsoneditor-container">
+        <div id="editor-left" class="editor-panel"></div>
+        <div id="dragbar" style="display: none;"></div>
+        <div id="editor-right" class="editor-panel"></div>
+    </div>
+
+    <script type="module">
+        import { createJSONEditor } from 'https://unpkg.com/vanilla-jsoneditor@3.3.1/standalone.js'
+
+        window.je = {
+            // Toolbar
+            swapContent: document.getElementById('swapContent'),
+            toggleEditor: document.getElementById('toggleEditor'),
+            hideRight: document.getElementById('hideRight'),
+            // Container
+            lPanel: document.getElementById('editor-left'),
+            dragBar: document.getElementById('dragbar'),
+            rPanel: document.getElementById('editor-right'),
+            //
+            get placeholder() {
+                return JSON.stringify({
+                    "array": [1, 2, 3],
+                    "boolean": true,
+                    "color": "#82b92c",
+                    "null": null,
+                    "number": 123,
+                    "object": { "a": "b", "c": "d" },
+                    "time": Date.now(),
+                    "string": "demo string😀"
+                }, null, 2)
+            },
+            _config: null,
+            get config() {
+                return this._config = this._config || JSON.parse(localStorage.getItem("jeConfig")) ||
+                    { showLeft: /* Narrow screen mode */ true, hideRight: /* Wide screen mode */ false };
+            },
+            set config(obj) { localStorage.setItem("jeConfig", JSON.stringify(Object.assign(this._config, obj))) },
+            get isNarrow() { return window.innerWidth <= 768 },
+            init() {
+                this.addEditor("l");
+                this.addEditor("r");
+                this.hideRight.addEventListener('click', () => {
+                    if (this.config.hideRight) {
+                        this.rPanel.style.display = this.dragBar.style.display = "block";
+                        this.lPanel.style.width = this.config.lPanelWidth || "calc(50vw - 2px)";
+                        this.rPanel.style.width = this.config.rPanelWidth || "calc(50vw - 2px)";
+                    } else {
+                        this.rPanel.style.display = this.dragBar.style.display = "none";
+                        this.lPanel.style.width = "100%";
+                    }
+                    this.config.hideRight = !this.config.hideRight;
+                    this.hideRight.textContent = this.config.hideRight ? "✖ Right" : "✔ Right";
+                })
+                this.toggleEditor.addEventListener('click', () => {
+                    if (this.config.showLeft) {
+                        this.rPanel.style.display = "block";
+                        void this.rPanel.offsetWidth;
+                        this.lPanel.style.transform = "translateY(-100%)";
+                        this.rPanel.style.transform = 'translateY(0%)';
+                    } else {
+                        this.lPanel.style.display = "block";
+                        void this.lPanel.offsetWidth;
+                        this.lPanel.style.transform = "translateY(0%)";
+                        this.rPanel.style.transform = 'translateY(100%)';
+                    }
+                    this.config.showLeft = !this.config.showLeft;
+                })
+                this.lPanel.addEventListener('transitionend', () => {
+                    if (this.config.showLeft) {
+                        this.rPanel.style.display = "none";
+                        this.toggleEditor.textContent = " ↓ ";
+                    }
+                });
+                this.rPanel.addEventListener('transitionend', () => {
+                    if (!this.config.showLeft) {
+                        this.lPanel.style.display = "none";
+                        this.toggleEditor.textContent = " ↑ "
+                    }
+                });
+                this.swapContent.addEventListener('click', () => {
+                    const lt = this.lEditor.get().text;
+                    const rt = this.rEditor.get().text;
+                    this.lEditor.updateProps({ content: { text: rt } });
+                    this.rEditor.updateProps({ content: { text: lt } });
+                });
+                this.dragBar.addEventListener('mousedown', (e) => {
+                    e.preventDefault();
+                    document.body.style.cursor = 'col-resize';
+                    let that = this;
+
+                    function onMouseMove(e) {
+                        const containerWidth = dragbar.parentNode.offsetWidth;
+                        let lWidth = e.clientX;
+                        const minWidth = 384;
+                        const maxWidth = containerWidth - minWidth;
+
+                        if (lWidth < minWidth) lWidth = minWidth;
+                        if (lWidth > maxWidth) lWidth = maxWidth;
+
+                        const rightWidth = containerWidth - lWidth;
+
+                        that.lPanel.style.width = `${lWidth}px`;
+                        that.rPanel.style.width = `calc(100vw - 4px - ${lWidth}px)`;
+                    }
+
+                    function onMouseUp() {
+                        document.removeEventListener('mousemove', onMouseMove)
+                        document.removeEventListener('mouseup', onMouseUp)
+                        document.body.style.cursor = 'default'
+                    }
+
+                    document.addEventListener('mousemove', onMouseMove)
+                    document.addEventListener('mouseup', onMouseUp)
+                });
+                this.dragBar.addEventListener("dblclick", () => {
+                    this.lPanel.style.width = this.rPanel.style.width = "clac(50vw - 2px)";
+                })
+                window.addEventListener('resize', () => {
+                    this.toggleEditor.style.display = this.isNarrow ? 'inline-block' : 'none';
+                    this.hideRight.style.display = this.isNarrow ? 'none' : 'inline-block';
+                    this.lPanel.style.display = this.isNarrow && !this.config.showLeft ? 'none' : 'block';
+                    this.dragBar.style.display = this.isNarrow || (!this.isNarrow && this.config.hideRight) ? 'none' : 'block';
+                    this.rPanel.style.display = (this.isNarrow && this.config.showLeft) || (!this.isNarrow && this.config.hideRight) ? 'none' : 'block';
+                    this.lPanel.style.transform = this.isNarrow && !this.config.showLeft ? 'translateY(-100%)' : "translateY(0%)";
+                    this.rPanel.style.transform = this.isNarrow && this.config.showLeft ? 'translateY(100%)' : "translateY(0%)";
+                });
+                if (this.config.hideRight) {
+                    this.hideRight.textContent = "✔ Right";
+                    this.rPanel.style.display = this.dragBar.style.display = "none";
+                    this.lPanel.style.width = "100%";
+                } else {
+                    this.lPanel.style.width = this.config.lPanelWidth || "calc(50vw - 2px)";
+                    this.rPanel.style.width = this.config.rPanelWidth || "calc(50vw - 2px)";
+                }
+                if (!this.config.showLeft) this.toggleEditor.textContent = " ↑ ";
+                window.dispatchEvent(new Event("resize"));
+            },
+            addEditor(side) {
+                this[side + "Editor"] = createJSONEditor({
+                    target: this[side + "Panel"],
+                    props: {
+                        mode: 'text', flattenColumns: true,
+                        content: { text: localStorage.getItem(`je${side}Content`) || this.placeholder },
+                        onChange(content) {
+                            localStorage.setItem(`je${side}Content`, content.text.indexOf('"string": "demo string😀"') > -1 ? null : content.text);
+                        },
+                        onFocus() { this.config.showLeft = side === "l"; }
+                    }
+                })
+            }
+        };
+
+        je.init();
+    </script>
+</body>
+
+</html>
