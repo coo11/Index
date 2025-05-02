@@ -38,7 +38,7 @@
   {
     "name": "JSON Editor",
     "path": "jsoneditor",
-    "view": "https://json.ehhh.eu.org/",
+    "view": "",
     "desc": "JSON Editor"
   }
 ]
