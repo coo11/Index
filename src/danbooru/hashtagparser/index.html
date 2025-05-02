@@ -39,8 +39,10 @@
         <option value="xhs">Xiaohongshu</option>
         <option value="bili">Bilibili</option>
         <option value="ins">Instagram</option>
+        <option value="tw">Twitter</option>
         <option value="fb">Facebook</option>
         <option value="bsky">BlueSky</option>
+        <option value="ytb">YouTube</option>
         <option value="custom">Custom</option>
     </select>
 
@@ -89,11 +91,17 @@
                     case 'ins':
                         prefix = "https://www.instagram.com/explore/tags/"
                         break;
+                    case 'tw':
+                        prefix = "https://x.com/hashtag/"
+                        break;
                     case 'fb':
                         prefix = "https://www.facebook.com/hashtag/"
                         break;
                     case 'bsky':
                         prefix = "https://bsky.app/hashtag/"
+                        break;
+                    case 'ytb':
+                        prefix = "https://www.youtube.com/hashtag/"
                         break;
                     case 'custom':
                         prefix = custom.value;
