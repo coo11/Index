@@ -253,7 +253,7 @@
                         mode: 'text', flattenColumns: true,
                         content: { text: localStorage.getItem(`je${side}Content`) || this.placeholder },
                         onChange(content) {
-                            localStorage.setItem(`je${side}Content`, content.text.indexOf('"string": "demo string😀"') > -1 ? null : content.text);
+                            localStorage.setItem(`je${side}Content`, content.text.indexOf('"string": "demo string😀"') > -1 ? "" : content.text);
                         },
                         onFocus() { this.config.showLeft = side === "l"; }
                     }
