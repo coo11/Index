@@ -27,7 +27,7 @@
     "name": "Minifier",
     "path": "",
     "view": "https://hm.ehhh.eu.org/",
-    "desc": "Online HTML/JS/CSS Minifier"
+    "desc": "Online HTML/JS/CSS Minifier."
   },
   {
     "name": "Hashtag Parser",
@@ -39,6 +39,6 @@
     "name": "JSON Editor",
     "path": "jsoneditor",
     "view": "",
-    "desc": "JSON Editor"
+    "desc": "JSON Editor."
   }
 ]

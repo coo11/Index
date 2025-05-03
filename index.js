@@ -20,8 +20,7 @@ ${css}
       <div id="page" class="mt-4">
         <h1>Tools Index</h1>
         <p>
-          This is a tools checklist I used. Most of them are based on open source
-          technology.
+          This is the tool set I use. Most of them are based on open source projects.
         </p>
         <table>
           <thead>
