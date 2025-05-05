@@ -181,24 +181,24 @@
                         void this.rPanel.offsetWidth;
                         this.lPanel.style.transform = "translateY(-100%)";
                         this.rPanel.style.transform = "translateY(0%)";
+                        this.toggleEditor.textContent = " ↓ ";
                     } else {
                         this.lPanel.style.display = "block";
                         void this.lPanel.offsetWidth;
                         this.lPanel.style.transform = "translateY(0%)";
                         this.rPanel.style.transform = "translateY(100%)";
+                        this.toggleEditor.textContent = " ↑ ";
                     }
                     this.update({ showLeft: !this.config.showLeft });
                 });
                 this.lPanel.addEventListener("transitionend", () => {
                     if (this.config.showLeft && this.isNarrow) {
                         this.rPanel.style.display = "none";
-                        this.toggleEditor.textContent = " ↓ ";
                     }
                 });
                 this.rPanel.addEventListener("transitionend", () => {
                     if (!this.config.showLeft && this.isNarrow) {
                         this.lPanel.style.display = "none";
-                        this.toggleEditor.textContent = " ↑ ";
                     }
                 });
                 this.swapContent.addEventListener("click", () => {
