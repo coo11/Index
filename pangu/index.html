@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Pangu.js Demo</title>
+    <link rel="icon" href="data:," />
+    <script src="https://cdnjs.snrat.com/ajax/libs/pangu/4.0.7/pangu.min.js"></script>
+  </head>
+
+  <body>
+    <h1>Pangu.js Demo</h1>
+    <form id="patch">
+      <p>
+        <textarea
+          placeholder="Insert whitespace between CJK and half-width characters...."
+          rows="10"
+          style="width: 100%; max-width: 600px;"
+          autofocus
+          required
+        ></textarea>
+      </p>
+
+      <button id="a" type="submit">Patch</button>
+      <br />
+      <button id="b" type="submit">Remove white space (U+0020) only</button>
+      <br />
+      <button id="c" type="submit">Remove all blank characters</button>
+    </form>
+    <script>
+      const textarea = document.querySelector("textarea");
+      const patchForm = document.querySelector("#patch");
+      patchForm.addEventListener("submit", event => {
+        event.preventDefault();
+        switch (event.submitter.id) {
+          case "a":
+            textarea.value = pangu.spacing(textarea.value);
+            break;
+          case "b":
+            textarea.value = textarea.value.replace(/ /g, "");
+            break;
+          case "c":
+            textarea.value = textarea.value.replace(/\s/g, "");
+            break;
+        }
+        textarea.select();
+      });
+    </script>
+  </body>
+</html>
