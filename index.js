@@ -1,8 +1,6 @@
 const CleanCSS = require("clean-css");
 const fs = require("fs");
-const path = require("path");
 
-let SOURCE_LOC = "https://github.com/coo11/Index/tree/master/";
 let CNAME = "t.ehhh.eu.org";
 
 function prefix(css) {

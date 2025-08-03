@@ -40,5 +40,11 @@
     "path": "jsoneditor",
     "view": "",
     "desc": "JSON Editor."
+  },
+  {
+    "name": "Font Metadata Viewer",
+    "path": "fontmetaviewer",
+    "view": "",
+    "desc": "Supported formats: TTF, OTF, WOFF, WOFF2."
   }
 ]
