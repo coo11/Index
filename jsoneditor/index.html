@@ -1,0 +1,312 @@
+<!doctype html>
+<html lang="en-US">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+    <title>JSON Editor</title>
+    <link rel="icon" href="data:,">
+    <style>
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #toolbar {
+            padding: 4px;
+            background: #FFF;
+            display: flex;
+            gap: 4px;
+            flex-wrap: wrap;
+            align-items: center;
+            font-family: apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+        }
+
+        #toolbar>button {
+            height: 24px;
+            border: 1px solid #3883FA;
+            background-color: #FFF;
+            color: #3883FA;
+        }
+
+        #toolbar>button:hover {
+            color: #FFF;
+            background-color: #3883FA;
+        }
+
+        #toolbar>span {
+            margin-left: auto;
+            margin-right: 4px;
+            padding: 0;
+            line-height: 1rem;
+        }
+
+        #toolbar a {
+            text-decoration: none;
+            color: #3883FA;
+        }
+
+        #toolbar a:hover {
+            color: #5F9DFF;
+        }
+
+        #jsoneditor-container {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+        }
+
+        .editor-panel {
+            width: 100%;
+            display: block;
+        }
+
+        #dragbar {
+            width: 4px;
+            background-color: #FFF;
+            cursor: col-resize;
+            height: 100%;
+            z-index: 10;
+        }
+
+        .jse-selected-button {
+            background-color: var(--jse-theme-color-highlight, #5F9DFF) !important;
+        }
+
+        @media (max-width: 768px) {
+            #jsoneditor-container {
+                flex-direction: column;
+                position: relative;
+            }
+
+            .editor-panel {
+                position: absolute;
+                width: 100% !important;
+                height: 100%;
+                border: none !important;
+                transition: transform 0.5s ease-in-out;
+            }
+
+            #dragbar {
+                display: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="toolbar">
+        <button id="swapContent">⇆</button>
+        <button id="toggleEditor" style="display: none;">&nbsp;↓&nbsp;</button>
+        <button id="hideRight" style="display: none;">✔ Right</button>
+        <span>
+            <a href="https://jsondiffpatch.com/" target="_blank">DiffPatch</a>&nbsp;|&nbsp;<a
+                href="https://jsoneditoronline.org/" target="_blank">Original</a>&nbsp;|&nbsp;<a
+                href="https://github.com/josdejong/svelte-jsoneditor" target="_blank">Github</a>
+        </span>
+    </div>
+
+    <div id="jsoneditor-container">
+        <div id="editor-left" class="editor-panel"></div>
+        <div id="dragbar" style="display: none;"></div>
+        <div id="editor-right" class="editor-panel"></div>
+    </div>
+
+    <script type="module">
+        import { createJSONEditor } from "https://registry.npmmirror.com/vanilla-jsoneditor/3.3.1/files/standalone.js";
+
+        window.je = {
+            // Toolbar
+            swapContent: document.getElementById("swapContent"),
+            toggleEditor: document.getElementById("toggleEditor"),
+            hideRight: document.getElementById("hideRight"),
+            // Container
+            lPanel: document.getElementById("editor-left"),
+            dragBar: document.getElementById("dragbar"),
+            rPanel: document.getElementById("editor-right"),
+            //
+            get placeholder() {
+                return JSON.stringify(
+                    {
+                        array: [1, 2, 3],
+                        boolean: true,
+                        color: "#82b92c",
+                        null: null,
+                        number: 123,
+                        object: { a: "b", c: "d" },
+                        time: Date.now(),
+                        string: "demo string😀"
+                    },
+                    null,
+                    2
+                );
+            },
+            _config: null,
+            get config() {
+                return (this._config = this._config ||
+                    JSON.parse(localStorage.getItem("jeConfig")) || { showLeft: /* Narrow screen mode */ true, hideRight: /* Wide screen mode */ false });
+            },
+            set config(obj) {
+                this._config = obj;
+                localStorage.setItem("jeConfig", JSON.stringify(this._config));
+            },
+            update(obj = {}) {
+                const updated = Object.assign({}, this.config, obj);
+                this.config = updated;
+            },
+            get isNarrow() {
+                return window.innerWidth <= 768;
+            },
+            init() {
+                this.addEditor("l");
+                this.addEditor("r");
+                this.hideRight.addEventListener("click", () => {
+                    if (this.config.hideRight) {
+                        this.rPanel.style.display = this.dragBar.style.display = "block";
+                        this.lPanel.style.width = this.config.lPanelWidth || "calc(50vw - 2px)";
+                        this.rPanel.style.width = this.config.rPanelWidth || "calc(50vw - 2px)";
+                    } else {
+                        this.rPanel.style.display = this.dragBar.style.display = "none";
+                        this.lPanel.style.width = "100%";
+                    }
+                    this.update({ hideRight: !this.config.hideRight });
+                    this.hideRight.textContent = this.config.hideRight ? "✖ Right" : "✔ Right";
+                });
+                this.toggleEditor.addEventListener("click", () => {
+                    if (this.config.showLeft) {
+                        this.rPanel.style.display = "block";
+                        void this.rPanel.offsetWidth;
+                        this.lPanel.style.transform = "translateY(-100%)";
+                        this.rPanel.style.transform = "translateY(0%)";
+                        this.toggleEditor.textContent = " ↓ ";
+                    } else {
+                        this.lPanel.style.display = "block";
+                        void this.lPanel.offsetWidth;
+                        this.lPanel.style.transform = "translateY(0%)";
+                        this.rPanel.style.transform = "translateY(100%)";
+                        this.toggleEditor.textContent = " ↑ ";
+                    }
+                    this.update({ showLeft: !this.config.showLeft });
+                });
+                this.lPanel.addEventListener("transitionend", () => {
+                    if (this.config.showLeft && this.isNarrow) {
+                        this.rPanel.style.display = "none";
+                    }
+                });
+                this.rPanel.addEventListener("transitionend", () => {
+                    if (!this.config.showLeft && this.isNarrow) {
+                        this.lPanel.style.display = "none";
+                    }
+                });
+                this.swapContent.addEventListener("click", () => {
+                    const lt = this.lEditor.get().text;
+                    const rt = this.rEditor.get().text;
+                    this.lEditor.updateProps({ content: { text: rt } });
+                    this.rEditor.updateProps({ content: { text: lt } });
+                });
+                this.dragBar.addEventListener("mousedown", e => {
+                    e.preventDefault();
+                    document.body.style.cursor = "col-resize";
+                    const that = this;
+
+                    function onMouseMove(e) {
+                        const containerWidth = dragbar.parentNode.offsetWidth;
+                        let lWidth = e.clientX;
+                        const minWidth = 384;
+                        const maxWidth = containerWidth - minWidth;
+
+                        if (lWidth < minWidth) lWidth = minWidth;
+                        if (lWidth > maxWidth) lWidth = maxWidth;
+
+                        const rightWidth = containerWidth - lWidth;
+
+                        that.lPanel.style.width = `${lWidth}px`;
+                        that.rPanel.style.width = `calc(100vw - 4px - ${lWidth}px)`;
+                    }
+
+                    function onMouseUp() {
+                        document.removeEventListener("mousemove", onMouseMove);
+                        document.removeEventListener("mouseup", onMouseUp);
+                        that.update({
+                            lPanelWidth: that.lPanel.style.width,
+                            rPanelWidth: that.rPanel.style.width
+                        });
+                        document.body.style.cursor = "default";
+                    }
+
+                    document.addEventListener("mousemove", onMouseMove);
+                    document.addEventListener("mouseup", onMouseUp);
+                });
+                this.dragBar.addEventListener("dblclick", () => {
+                    this.lPanel.style.width = this.rPanel.style.width = "calc(50vw - 2px)";
+                    this.update({ lPanelWidth: null, rPanelWidth: null });
+                });
+                window.addEventListener("resize", () => {
+                    this.toggleEditor.style.display = this.isNarrow ? "inline-block" : "none";
+                    this.hideRight.style.display = this.isNarrow ? "none" : "inline-block";
+                    this.lPanel.style.display = this.isNarrow && !this.config.showLeft ? "none" : "block";
+                    this.dragBar.style.display = this.isNarrow || (!this.isNarrow && this.config.hideRight) ? "none" : "block";
+                    this.rPanel.style.display = (this.isNarrow && this.config.showLeft) || (!this.isNarrow && this.config.hideRight) ? "none" : "block";
+                    this.lPanel.style.transform = this.isNarrow && !this.config.showLeft ? "translateY(-100%)" : "translateY(0%)";
+                    this.rPanel.style.transform = this.isNarrow && this.config.showLeft ? "translateY(100%)" : "translateY(0%)";
+                });
+                if (this.config.hideRight) {
+                    this.hideRight.textContent = "✔ Right";
+                    this.rPanel.style.display = this.dragBar.style.display = "none";
+                    this.lPanel.style.width = "100%";
+                } else {
+                    this.lPanel.style.width = this.config.lPanelWidth || "calc(50vw - 2px)";
+                    this.rPanel.style.width = this.config.rPanelWidth || "calc(50vw - 2px)";
+                }
+                if (!this.config.showLeft) this.toggleEditor.textContent = " ↑ ";
+                window.dispatchEvent(new Event("resize"));
+            },
+            addEditor(side) {
+                this[side + "Editor"] = createJSONEditor({
+                    target: this[side + "Panel"],
+                    props: {
+                        mode: "text",
+                        flattenColumns: true,
+                        readOnly: this.config[side + "EditorReadOnly"],
+                        content: { text: localStorage.getItem(`je${side}Content`) || this.placeholder },
+                        onChange(content) {
+                            localStorage.setItem(`je${side}Content`, content.text.indexOf('"string": "demo string😀"') > -1 ? "" : content.text);
+                        },
+                        onFocus: () => {
+                            this.update({ showLeft: side === "l" });
+                        },
+                        onRenderMenu: (items, ctx) => {
+                            const titles = ["Status: Editable", "Status: Read only"];
+                            const readOnlyButton = {
+                                type: "button",
+                                className: ctx.readOnly ? "jse-selected-button" : "",
+                                icon: {
+                                    iconName: 'pencil-slash',
+                                    icon: [24, 24, [], "", "m11.112,16.491c.586.586.586,1.535,0,2.121l-3.777,3.776c-1.04,1.039-2.421,1.611-3.889,1.611h-1.946c-.829,0-1.5-.672-1.5-1.5v-1.946c0-1.469.572-2.85,1.611-3.889l3.88-3.88c.586-.586,1.535-.586,2.121,0s.586,1.535,0,2.121l-3.499,3.499,1.482,1.482,3.396-3.396c.586-.586,1.535-.586,2.121,0Zm12.448,7.069c-.293.293-.677.439-1.061.439s-.768-.146-1.061-.439L.439,2.561C-.146,1.975-.146,1.025.439.439S1.975-.146,2.561.439l7.638,7.638,6.892-6.892c.764-.765,1.78-1.186,2.862-1.186s2.098.421,2.862,1.186c1.578,1.578,1.578,4.146,0,5.725l-6.893,6.891,7.638,7.638c.586.586.586,1.535,0,2.121ZM19.212,3.307l-1.751,1.751,1.482,1.482,1.751-1.751c.408-.408.408-1.074,0-1.482-.396-.396-1.085-.396-1.481,0Zm-6.893,6.892l1.482,1.482,3.02-3.02-1.482-1.482-3.02,3.02Z"]
+                                },
+                                title: titles[Number(ctx.readOnly)],
+                                onClick: e => {
+                                    let button = e.target;
+                                    button.classList.toggle("jse-selected-button", !ctx.readOnly);
+                                    this[side + "Editor"].updateProps({ readOnly: !ctx.readOnly });
+                                    this.update({ [side + "EditorReadOnly"]: !ctx.readOnly });
+                                    button.title = titles[Number(!ctx.readOnly)];
+                                }
+                            };
+
+                            items.splice(-1, 0, { type: 'separator' }, readOnlyButton);
+                            return items;
+                        }
+                    }
+                });
+            }
+        };
+
+        je.init();
+    </script>
+</body>
+
+</html>

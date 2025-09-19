@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hashtag Parser</title>
+    <style>
+      body {
+        margin: 20px;
+      }
+
+      textarea {
+        width: 100%;
+        height: 100px;
+        margin: 10px 0;
+      }
+
+      select,
+      button,
+      input[type="text"] {
+        margin: 10px 0;
+        padding: 5px;
+      }
+
+      .hidden {
+        display: none;
+      }
+    </style>
+  </head>
+
+  <body>
+    <h1>Replace Plain text Hashtag with DText</h1>
+
+    <hr />
+
+    <label for="platform">Choose platform:</label>
+    <select id="platform">
+      <option value="xhs">Xiaohongshu</option>
+      <option value="bili">Bilibili</option>
+      <option value="wb">Weibo</option>
+      <option value="ins">Instagram</option>
+      <option value="tw">Twitter</option>
+      <option value="fb">Facebook</option>
+      <option value="bsky">BlueSky</option>
+      <option value="ytb">YouTube</option>
+      <option value="custom">Custom</option>
+    </select>
+
+    <div class="hidden">
+      <input type="text" id="custom" placeholder="Enter custom hashtag URL prefix" value="http://example.com/hashtag/" />
+      <label for="singlehash">Single #</label><input type="checkbox" id="singlehash" checked />
+    </div>
+
+    <br />
+    <label for="input-text">Input Text:</label>
+    <textarea id="input-text" placeholder="Enter your text here..."></textarea>
+    <button id="convert-button">Convert</button>
+    <br />
+    <label for="output-text">Output Text:</label>
+    <textarea id="output-text" readonly placeholder="Processed text will appear here..."></textarea>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const platform = document.getElementById("platform");
+        const custom = document.getElementById("custom");
+        const inputText = document.getElementById("input-text");
+        const outputText = document.getElementById("output-text");
+        const button = document.getElementById("convert-button");
+
+        // Show or hide custom input based on selection
+        platform.addEventListener("change", () => {
+          if (platform.value === "custom") {
+            custom.parentElement.classList.remove("hidden");
+          } else {
+            custom.parentElement.classList.add("hidden");
+          }
+        });
+
+        const process = (text, platform) => {
+          let prefix,
+            singleHash = true,
+            inlineSharp = false;
+          switch (platform) {
+            case "xhs":
+              prefix = "https://www.xiaohongshu.com/search_result?keyword=";
+              break;
+            case "bili":
+              prefix = "https://search.bilibili.com/all?keyword=";
+              singleHash = false;
+              break;
+            case "wb":
+              prefix = "https://s.weibo.com/weibo?q=";
+              singleHash = false;
+              inlineSharp = true;
+              break;
+            case "ins":
+              prefix = "https://www.instagram.com/explore/tags/";
+              break;
+            case "tw":
+              prefix = "https://x.com/hashtag/";
+              break;
+            case "fb":
+              prefix = "https://www.facebook.com/hashtag/";
+              break;
+            case "bsky":
+              prefix = "https://bsky.app/hashtag/";
+              break;
+            case "ytb":
+              prefix = "https://www.youtube.com/hashtag/";
+              break;
+            case "custom":
+              prefix = custom.value;
+              singleHash = document.getElementById("singlehash").checked;
+              break;
+            default:
+              break;
+          }
+
+          const regex = singleHash ? /#(\S+)/g : /#(\S.*?)#/g;
+          const convertedText = text.replace(regex, (match, hashtag) => {
+            if (match.endsWith("#") && singleHash) return match;
+            hashtag = !inlineSharp ? hashtag : match;
+            return `"${match}":[${prefix}${encodeURIComponent(hashtag)}]`;
+          });
+
+          return convertedText;
+        };
+
+        button.addEventListener("click", () => {
+          const output = process(inputText.value, platform.value);
+          outputText.value = output;
+          outputText.select();
+        });
+      });
+    </script>
+  </body>
+</html>
