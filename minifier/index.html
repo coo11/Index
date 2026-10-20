@@ -1,0 +1,91 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>HTMLMinifier: Online HTML/JS/CSS Minifier</title>
+    <!--
+		Wrapper created by coo11
+	 -->
+    <link rel="stylesheet" href="style.css" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cpath fill='%23ffc843' d='m256 329 63 36v128H193V365zm63-182V19H193v128l63 36z'/%3E%3Cpath fill='%23ff350f' d='m256 183 63-36v73zm-63 109v73l63-36z'/%3E%3Cpath fill='%23ff4338' d='M319 220v-73l110-64 63 109-111 64zm-189 36L19 320l63 109 111-64v-73z'/%3E%3Cpath fill='%23002f32' d='m319 220 62 36-62 36zm-126 0-63 36 63 36z'/%3E%3Cpath fill='%2300b3e3' d='m193 220-63 36-111-64L83 83l110 64zm126 72v73l110 64 63-109-111-64z'/%3E%3Cpath fill='%23008c3c' d='M319 292v73l-63-36zm-63-109-63-36v73z'/%3E%3Cpath fill='%2300250d' d='m256 183-63 37v72l63 37 63-37v-72z'/%3E%3C/svg%3E" />
+  </head>
+
+  <body>
+    <div id="page">
+      <div class="header">
+        <h1>
+          <a id="header-link" href="./">HTMLMinifier: Online HTML/JS/CSS Minifier</a>
+        </h1>
+      </div>
+      <div class="main">
+        <div class="c1">
+          <div class="type l1">
+            <input type="radio" id="ih" name="type" value="HTML" />
+            <label for="ih">HTML</label>
+            <input type="radio" id="ij" name="type" value="JavaScript" />
+            <label for="ij">JavaScript</label>
+            <input type="radio" id="ic" name="type" value="CSS" />
+            <label for="ic">CSS</label>
+          </div>
+          <div class="input">
+            <textarea id="in" rows="24" cols="80" spellcheck="false" disabled autofocus></textarea>
+            <div class="ctrl">
+              <button class="btn-main fr" id="btn-go" disabled>Minify</button>
+              <button id="btn-options">Options</button>
+              <!-- <input id="as-i-type" type="checkbox" checked />
+              <label for="as-i-type">As I type</label> -->
+            </div>
+          </div>
+          <div class="option hide">
+            <textarea id="op" rows="24" cols="80" spellcheck="false"></textarea>
+            <div class="ctrl">
+              <button class="btn-main" id="btn-options-save">Save</button>
+              <button id="btn-options-reset">Use defaults</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="c2 hide">
+          <div class="stats l1"></div>
+          <div class="output">
+            <textarea id="out" rows="24" cols="80" spellcheck="false" readonly></textarea>
+          </div>
+        </div>
+
+        <div class="c3 hide">
+          <pre id="error"></pre>
+        </div>
+
+        <div class="c4">
+          <p>
+            <strong>HTMLMinifier</strong> is an excellent tool to help you minify your HTML/JavaScript/CSS! Uses
+            <a href="https://github.com/terser/html-minifier-terser">html-minifier-terser</a>
+            which comes with <a href="https://github.com/terser/terser">terser</a>. CSS is minified with <a href="https://github.com/parcel-bundler/lightningcss">Lightning CSS</a>.
+          </p>
+          <p>This is a simple browser wrapper around the minifier; the hard work is done by the terser and Lightning CSS teams.</p>
+          <p>
+            <small>
+              This wrapper for the browser was created by
+              <a href="https://github.com/coo11">coo11</a>. Inspired by <i><a href="https://uglifyjs.pages.dev" target="_blank">UglifyJS 3: Online JavaScript minifier</a></i
+              >.
+              <br />
+              <code class="version">html-minifier-terser 7.2.0</code>
+              <br />
+              <code class="version">lightningcss-wasm 1.33.0</code>
+            </small>
+          </p>
+        </div>
+      </div>
+    </div>
+    <footer>
+      <a href="https://terser.org/html-minifier-terser/" target="_blank">HTML Minifier Terser</a> |
+      <a href="https://lightningcss.dev/" target="_blank">Lightning CSS</a>
+    </footer>
+    <script src="https://cdn.jsdelivr.net/npm/html-minifier-terser@7.2.0/dist/htmlminifier.umd.bundle.min.js"></script>
+    <script type="module" src="index.js"></script>
+  </body>
+</html>
