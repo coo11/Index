@@ -116,7 +116,7 @@
     </div>
 
     <script type="module">
-        import { createJSONEditor } from "https://registry.npmmirror.com/vanilla-jsoneditor/3.3.1/files/standalone.js";
+        import { createJSONEditor } from "https://cdn.jsdelivr.net/npm/vanilla-jsoneditor@3.13.0/standalone.min.js";
 
         window.je = {
             // Toolbar
@@ -273,7 +273,8 @@
                         readOnly: this.config[side + "EditorReadOnly"],
                         content: { text: localStorage.getItem(`je${side}Content`) || this.placeholder },
                         onChange(content) {
-                            localStorage.setItem(`je${side}Content`, content.text.indexOf('"string": "demo string😀"') > -1 ? "" : content.text);
+                            const text = content.text ?? JSON.stringify(content.json, null, 2);
+                            localStorage.setItem(`je${side}Content`, text.indexOf('"string": "demo string😀"') > -1 ? "" : text);
                         },
                         onFocus: () => {
                             this.update({ showLeft: side === "l" });
