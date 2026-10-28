@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Font Metadata Viewer</title>
+    <link rel="icon" href="data:," />
+    <style>
+      :root {
+        --body-font: "Verdana", "Helvetica", sans-serif;
+      }
+      body {
+        font-size: 87.5%;
+        font-family: var(--body-font);
+      }
+      h1 {
+        font-weight: bold;
+        line-height: 1.5em;
+      }
+      a {
+        color: #0075f8;
+        text-decoration: none;
+      }
+
+      a:hover {
+        color: #8caaff;
+      }
+
+      a:focus {
+        outline: thin dotted;
+      }
+
+      p {
+        line-height: 1.25em;
+      }
+
+      button {
+        font-size: 100%;
+        border-radius: 3px;
+        padding: 0.25em 1em;
+        cursor: pointer;
+        border: 1px solid #d1d1da;
+        background-color: #e8e8ec;
+        color: #000;
+        margin-bottom: 4px;
+      }
+
+      button:hover {
+        box-shadow: 0 0 2px #777892;
+        background-color: #f6f6f8;
+      }
+
+      button:active {
+        box-shadow: 0 0 2px #777892;
+        background-color: #d1d1da;
+      }
+
+      #error {
+        color: red;
+        font-weight: bold;
+      }
+
+      table {
+        display: block;
+        overflow-x: auto;
+        border-collapse: collapse;
+      }
+      tr {
+        border-bottom: 1px solid #d1d1da;
+      }
+      tr:nth-child(even) {
+        background-color: #e8e8ec;
+      }
+      tr:hover {
+        background-color: #e1e8ff;
+      }
+      td,
+      th {
+        padding: 4px 6px;
+        padding-right: 0.5rem;
+        white-space: nowrap;
+      }
+      th {
+        font-size: larger;
+        font-weight: bold;
+        text-align: center;
+        border-bottom: 2px solid #5b5c79;
+      }
+      td:first-of-type {
+        text-align: right;
+      }
+      td:nth-of-type(2) {
+        text-align: left;
+        white-space: normal;
+        max-width: 800px;
+      }
+      .badge {
+        display: inline-block;
+        background-color: #0075f8;
+        text-align: center;
+        color: #fff;
+        min-width: 1.2rem;
+        padding: 0.1rem 0.2rem 0.2rem;
+        font-size: 0.8rem;
+        line-height: 1;
+        border-radius: 0.6rem;
+        margin-right: 0.5em;
+        user-select: none;
+      }
+      @media screen and (max-width: 660px) {
+        th,
+        td:first-of-type {
+          text-align: left;
+        }
+        td:first-of-type {
+          vertical-align: top;
+        }
+        td:nth-of-type(2) {
+          text-align: left;
+          white-space: nowrap;
+          max-width: unset;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <h1>Font Metadata Viewer</h1>
+    <hr />
+    <p>
+      Supported file formats: TTF, OTF, WOFF & WOFF2.
+      <br />
+      Check the Console for extra output (<code>window.font</code>).
+      <br />
+      Powered by <a href="https://github.com/opentypejs/opentype.js" target="_blank">opentype.js</a>.
+      <br />
+      Related links:
+      <br />
+      &nbsp;&nbsp;*&nbsp;<a href="https://www.bejson.com/ui/font/" target="_blank">BEJSON</a> (View Glyphs)
+      <br />
+      &nbsp;&nbsp;*&nbsp;<a href="https://hlorenzi.github.io/font-js/" target="_blank">Font Inspect</a> (Supports TTC)
+      <br />
+      &nbsp;&nbsp;*&nbsp;<a href="https://amagi.dev/font-metrics-viewer/" target="_blank">Font Metrics Visualizer</a>
+    </p>
+    <form class="container" name="head">
+      <p id="error"></p>
+      <div class="d-flex mb-2 gap-2">
+        <input id="fontFile" type="file" class="form-control" accept=".ttf,.otf,.woff,.woff2" style="display: none" />
+        <button type="button" onclick="document.getElementById('fontFile').click()" title="ttf, otf, woff, woff2">Select font...</button>
+      </div>
+      <table>
+        <tbody id="tb"></tbody>
+      </table>
+    </form>
+    <script src="https://cdnjs.snrat.com/ajax/libs/opentype.js/1.3.4/opentype.min.js"></script>
+    <script src="index.js"></script>
+  </body>
+</html>
