@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
   <head>
     <meta charset="UTF-8" />
@@ -7,76 +7,55 @@
     <title>SVG to Image</title>
     <link rel="icon" href="data:," />
     <script src="https://cdnjs.snrat.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <style>
+      * {
+        font-family: monospace;
+      }
+      #string-input {
+        width: auto;
+        max-width: 100%;
+      }
+      .img-container {
+        overflow: scroll;
+        width: 100%;
+        max-height: 100vh;
+        background-size: 20px 20px;
+        background-image: conic-gradient(#eee 0 25%, #fff 25% 50%, #eee 50% 75%, #fff 75% 100%);
+      }
+    </style>
   </head>
 
   <body>
-    <!--
-  https://jsfiddle.net/remarkablemark/fxg4Lvdt/
--->
+    <!-- https://jsfiddle.net/remarkablemark/fxg4Lvdt/ -->
 
     <h1>SVG to Image</h1>
 
-    <!--
-  Load SVG.
--->
+    <!-- Load SVG. -->
     <form id="load-svg">
       <p>
-        <textarea
-          placeholder="SVG markup..."
-          rows="5"
-          cols="50"
-          autofocus
-          required
-        ></textarea>
+        <textarea id="string-input" placeholder="SVG markup..." rows="5" cols="50" autofocus required></textarea>
         <br />
         <button type="submit">Load SVG</button>
       </p>
     </form>
     <hr />
-    <label for="file-input"
-      >Or select file(s) from local to do a mass convert for square
-      image(s):</label
-    >
+    <label for="file-input">Or select file(s) from local to do a mass convert for square image(s):</label>
     <br />
-    <input
-      id="file-input"
-      name="filefield"
-      multiple="multiple"
-      type="file"
-      accept=".svg"
-    />
-    <!--
-  SVG container.
--->
+    <input id="file-input" name="filefield" multiple="multiple" type="file" accept=".svg" />
+    <!-- SVG container. -->
     <hr />
-    <div id="svg-container"></div>
-    <!--
-  Save image.
--->
+    <div id="svg-container" class="img-container"></div>
+    <!-- Save image. -->
     <form id="save-image">
       <p>
         <label>
           Width:
-          <input
-            placeholder="Pixels..."
-            name="width"
-            type="number"
-            min="1"
-            max="999999"
-            required
-          />
+          <input placeholder="Pixels..." name="width" type="number" min="1" max="999999" required />
         </label>
         &nbsp;
         <label>
           Height:
-          <input
-            placeholder="Pixels..."
-            name="height"
-            type="number"
-            min="1"
-            max="999999"
-            required
-          />
+          <input placeholder="Pixels..." name="height" type="number" min="1" max="999999" required />
         </label>
       </p>
 
@@ -90,12 +69,7 @@
       <p>
         <label>
           Filename:
-          <input
-            placeholder="Name without extension..."
-            name="filename"
-            size="25"
-            required
-          />
+          <input placeholder="Name without extension..." name="filename" size="25" required />
         </label>
       </p>
 
@@ -105,7 +79,6 @@
           <input type="radio" name="extension" value="png" checked />
           PNG
         </label>
-        &nbsp;
         <label>
           <input type="radio" name="extension" value="jpeg" />
           JPEG
@@ -121,7 +94,7 @@
       </p>
     </form>
 
-    <canvas></canvas>
+    <div class="img-container"><canvas></canvas></div>
     <a id="download-link" style="display: none"></a>
     <script>
       const textarea = document.querySelector("textarea");
@@ -134,11 +107,9 @@
         let elem = document.createElement("canvas");
         let isSupport = false;
         if (!!(elem.getContext && elem.getContext("2d"))) {
-          isSupport =
-            elem.toDataURL("image/webp").indexOf("data:image/webp") == 0;
+          isSupport = elem.toDataURL("image/webp").indexOf("data:image/webp") == 0;
         }
-        !isSupport &&
-          saveImageForm.querySelector("input[value=webp]").parentNode.remove();
+        !isSupport && saveImageForm.querySelector("input[value=webp]").parentNode.remove();
       })();
 
       const loadButton = loadSVGForm.querySelector("button");
@@ -177,9 +148,7 @@
           if (width) {
             svg.setAttribute("width", width);
             if (keepRatioCheck.checked) {
-              height = Math.round(
-                (width * this.svgOriginalHeight) / this.svgOriginalWidth
-              );
+              height = Math.round((width * this.svgOriginalHeight) / this.svgOriginalWidth);
               svg.setAttribute("height", height);
               heightInput.value = height;
               return;
@@ -188,9 +157,7 @@
           if (height) {
             svg.setAttribute("height", height);
             if (keepRatioCheck.checked) {
-              width = Math.round(
-                (height * this.svgOriginalWidth) / this.svgOriginalHeight
-              );
+              width = Math.round((height * this.svgOriginalWidth) / this.svgOriginalHeight);
               svg.setAttribute("width", width);
               widthInput.value = width;
             }
@@ -206,12 +173,9 @@
           this.resetCanvas();
           svg = svgContainer.querySelector("svg");
           /* Add viewBox & remove width & height
-                 Prevent image from being cropped */
+             Prevent image from being cropped */
           if (!svg.hasAttribute("viewBox")) {
-            svg.setAttribute(
-              "viewBox",
-              `0 0 ${this.svgWidth} ${this.svgHeight}`
-            );
+            svg.setAttribute("viewBox", `0 0 ${this.svgWidth} ${this.svgHeight}`);
           }
           svg.removeAttribute("width");
           svg.removeAttribute("height");
@@ -232,15 +196,12 @@
               canvas.getContext("2d").drawImage(img, 0, 0);
               let ext = that.saveExtension;
               let mimeType = "image/" + ext;
-              let uri = canvas
-                .toDataURL(mimeType)
-                .replace(mimeType, "octet/stream");
+              let uri = canvas.toDataURL(mimeType).replace(mimeType, "octet/stream");
               // cleanup
               URL.revokeObjectURL(uri);
               img.removeEventListener("load", drawImageAndDownload);
 
-              if (singleFile)
-                that.download(uri, filenameInput.value + "." + ext);
+              if (singleFile) that.download(uri, filenameInput.value + "." + ext);
               resolve(uri);
             });
 
@@ -259,8 +220,7 @@
 
             widthInput.value = this.svgWidth;
             heightInput.value = this.svgHeight;
-            filenameInput.value =
-              svg.getAttribute("aria-label") || svg.id || "untitled";
+            filenameInput.value = svg.getAttribute("aria-label") || svg.id || "untitled";
           });
 
           widthInput.addEventListener("input", event => {
@@ -312,20 +272,9 @@
               canvas.width = sideLength;
               canvas.height = sideLength;
               let uri = await this.svgSave(false);
-              zip.file(
-                file.name.slice(0, -4) + "." + this.saveExtension,
-                uri.split("base64,")[1],
-                { base64: true }
-              );
+              zip.file(file.name.slice(0, -4) + "." + this.saveExtension, uri.split("base64,")[1], { base64: true });
             }
-            zip
-              .generateAsync({ type: "blob" })
-              .then(data =>
-                this.download(
-                  URL.createObjectURL(data),
-                  `BatchSVG2Image_${Date.now()}.zip`
-                )
-              );
+            zip.generateAsync({ type: "blob" }).then(data => this.download(URL.createObjectURL(data), `BatchSVG2Image_${Date.now()}.zip`));
           };
         },
         download(dataUri, filename) {
@@ -342,8 +291,7 @@
         return new Promise((resolve, reject) => {
           let fileReaderInstance = new FileReader();
           fileReaderInstance.onload = ({ target: { result: e } }) => resolve(e);
-          fileReaderInstance.onerror = ({ target: { error: e } }) =>
-            reject(new BusinessError(e.message || "读取文件失败。", e));
+          fileReaderInstance.onerror = ({ target: { error: e } }) => reject(new BusinessError(e.message || "Failed to load file.", e));
           fileReaderInstance.readAsText(file);
         });
       }
